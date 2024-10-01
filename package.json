@@ -1,0 +1,14 @@
+{
+  "name": "RFID_server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "RFID server to map card reader with attendance",
+  "main": "index.js",
+  "repository": "https://github.com/iot-lab-kiit/RFID_server.git",
+  "author": "IoT Lab , KIIT",
+  "license": "MIT",
+  "dependencies": {
+    "@directus/sdk": "^17.0.1",
+    "dotenv": "^16.4.5"
+  }
+}
