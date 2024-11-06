@@ -15,7 +15,7 @@ export const client = createDirectus(process.env.PUBLIC_DIRECTUS_URL)    //stati
     })
   );
 
-export const clientToken = (token) => {     //dynamic token
+export const clientToken = (token) => {   
   return createDirectus(process.env.PUBLIC_DIRECTUS_URL) 
     .with(staticToken(token))
     .with(rest());
