@@ -18,21 +18,17 @@ import { readItems, updateItems } from "@directus/sdk";
 export async function checkRFIDTag(rfidTag, token) {
   try {
     const client = clientToken(token);
-    const response = await clientToken(token).request(
-      readItems("teams",
-        {
-        filter: {
-          rfid_tag: {
-            _eq: rfidTag,
-          },
-        },
-        limit: 1,
+    
+    
+    const response = await client.request(
+      readItems("teams", {
         fields: ["id", "email", "rfid_tag", "attendance"],
-      }
-    )
+      })
     );
-    console.log("data", response);
-    const team = response;
+    // console.log("Fetched data:", response);
+    
+   const target=rfidTag;
+    const team = response.find((item) => item.rfid_tag == target);
 
     if (team) {
       console.log("RFID Tag exists:", team);
@@ -40,11 +36,11 @@ export async function checkRFIDTag(rfidTag, token) {
     } else {
       console.log("RFID Tag does not exist.");
     }
+    
     return team;
   } catch (error) {
     console.error("Error fetching RFID tag:", error);
   }
-  // return null;
 }
 
 async function updateAttendance(teamId, token) {
@@ -52,16 +48,16 @@ async function updateAttendance(teamId, token) {
     const client = clientToken(token);
 
     const updatedTeam = await client.request(
-      updateItems("teams", {
-        id: teamId,
-        data: { attendance: true },
-      })
+      updateItems("teams", { filter: { id: teamId } }, { attendance: true })
     );
+    
     console.log("Attendance updated:", updatedTeam);
   } catch (error) {
     console.error("Error updating attendance:", error);
   }
 }
+
+
 
 // Example RFID tag and token
 const rfidTag = 2431004846.0; // replace with the actual RFID tag
