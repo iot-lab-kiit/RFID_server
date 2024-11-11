@@ -1,14 +1,61 @@
-export function getUserObject(userId){
-    //TODO: get user object from directus
+import { clientToken } from "./directus.js";
+import {
+  createItem,
+  createItems,
+  readItems,
+  updateItem,
+  updateItems,
+} from "@directus/sdk";
+
+export async function getMemberFromRFID(rfid) {
+  try {
+    return await clientToken().request(
+      readItems("teams", {
+        fields: ["id", "email", "rfid_tag"],
+        filter: { rfid_tag: rfid },
+      })
+    );
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
-export function handleUserEntryAndExit(userObject){
-    //TODO: if userObject has intime set then set outtime to current time and post to directus
-    //TODO: elsre userObject has no intime set then set intime to current time and post to directus
+export async function getAttendanceDetails(memberId) {
+  try {
+    return await clientToken().request(
+      readItems("attendance", {
+        fields: ["id", "in_time", "out_time", "roll"],
+        filter: {
+          roll: memberId,
+          in_time: { _lte: "$NOW" },
+        },
+        limit: 1,
+        sort: "-in_time",
+      })
+    );
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
-export function resetUserObject(userId){
-    //TODO: get all users with intime set and outtime not set.
-    //TODO: set their outime to current time
-    //TODO: call from a parent function everyday at 12am
+export async function CreateAttendance(memberId) {
+  try {
+    return await clientToken().request(
+      createItem("attendance", [{ roll: memberId, in_time: new Date() }])
+    );
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function UpdateAttendance(attendanceId) {
+  try {
+    return await clientToken().request(
+      updateItem("attendance", attendanceId, { out_time: new Date() })
+    );
+  } catch (e) {
+    console.error(e);
+  }
 }

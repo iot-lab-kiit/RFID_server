@@ -1,23 +1,9 @@
-import {
-  createDirectus,
-  rest,
-  authentication,
-  staticToken,
-} from "@directus/sdk";
-import dotenv from "dotenv";
-dotenv.config();
-export const client = createDirectus(process.env.PUBLIC_DIRECTUS_URL)    //static token
-  .with(rest())
-  .with(
-    authentication({
-      mode: "json",
-      staticToken: process.env.TOKEN,
-    })
-  );
+import {config} from "dotenv";
+import { createDirectus, rest, staticToken } from "@directus/sdk";
+config();
 
-export const clientToken = (token) => {   
-  return createDirectus(process.env.PUBLIC_DIRECTUS_URL) 
-    .with(staticToken(token))
+export const clientToken = () => {
+  return createDirectus(process.env.PUBLIC_DIRECTUS_URL)
+    .with(staticToken(process.env.TOKEN))
     .with(rest());
 };
-

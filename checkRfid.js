@@ -1,77 +1,37 @@
 import {
-  createDirectus,
-  rest,
-  authentication,
-  staticToken,
-} from "@directus/sdk";
-import dotenv from "dotenv";
-dotenv.config();
+  CreateAttendance,
+  getAttendanceDetails,
+  getMemberFromRFID,
+  UpdateAttendance,
+} from "./utils.js";
 
-export const clientToken = (token) => {
-  return createDirectus(process.env.PUBLIC_DIRECTUS_URL)
-    .with(staticToken(token))
-    .with(rest());
-};
-
-import { readItems, updateItems } from "@directus/sdk";
-
-export async function checkRFIDTag(rfidTag, token) {
+export async function checkRFIDTag(rfid) {
   try {
-    const client = clientToken(token);
-    
-    
-    const response = await client.request(
-      readItems("teams", {
-        fields: ["id", "email", "rfid_tag", "attendance"],
-      })
-    );
-    // console.log("Fetched data:", response);
-    
-   const target=rfidTag;
-    const team = response.find((item) => item.rfid_tag == target);
+    const response = await getMemberFromRFID(rfid);
 
-    if (team) {
-      console.log("RFID Tag exists:", team);
-      await updateAttendance(team.id, token);
-    } else {
-      console.log("RFID Tag does not exist.");
-    }
-    
-    return team;
+    if (response.length === 0) return null;
+    else await attendanceLogic(response[0]);
   } catch (error) {
     console.error("Error fetching RFID tag:", error);
   }
 }
 
-async function updateAttendance(teamId, token) {
+async function attendanceLogic(memberObj) {
   try {
-    const client = clientToken(token);
+    const response = await getAttendanceDetails(memberObj.id);
 
-    const updatedTeam = await client.request(
-      updateItems("teams", { filter: { id: teamId } }, { attendance: true })
-    );
-    
-    console.log("Attendance updated:", updatedTeam);
+    if (
+      response.length === 0 ||
+      new Date(response[0].in_time).getDate() !== new Date().getDate()
+    ) {
+      CreateAttendance(memberObj.id);
+    } else if (
+      new Date(response[0].in_time).getDate() === new Date().getDate() &&
+      !response[0].out_time
+    ) {
+      UpdateAttendance(response[0].id);
+    }
   } catch (error) {
     console.error("Error updating attendance:", error);
   }
 }
-
-
-
-// Example RFID tag and token
-const rfidTag = 2431004846.0; // replace with the actual RFID tag
-const token = process.env.TOKEN; // replace with the actual token
-
-// Call the function and handle the result
-checkRFIDTag(rfidTag, token)
-  .then((team) => {
-    if (team) {
-      console.log("RFID tag data:", team);
-    } else {
-      console.log("RFID tag not found in the database.");
-    }
-  })
-  .catch((error) => {
-    console.error("Error in RFID tag check:", error);
-  });
